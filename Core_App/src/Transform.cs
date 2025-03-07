@@ -30,9 +30,8 @@ namespace Core_App
             if (m_Parent != null) return m_Parent.GetGlobalPosition() + m_Position;
             else return m_Position;
         }
-
         public Vector3 GetLocalPosition() { return m_Position; }
-
+        public void SetParent(Transform Parent) { m_Parent = Parent; }
         public void SetLocalPosition(Vector3 NewPosition)
         {
             m_Position = NewPosition;
