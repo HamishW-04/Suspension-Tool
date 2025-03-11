@@ -26,6 +26,10 @@
             m_Scene.Render3D += Render;
         }
 
+        //Fields
+        public Transform GetTransform() { return m_Transform; }
+
+        //Methods
         public abstract void Render(object sender, EventArgs e);
     }
 

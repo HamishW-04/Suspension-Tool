@@ -11,10 +11,11 @@ namespace Core_App
     {
         //Attributes
         private Transform? m_Parent;
-        private Vector3 m_Position;
+        public Vector3 m_Position;
 
         public Transform()
         {
+            m_Parent = null;
             m_Position = Vector3.Zero;
         }
 

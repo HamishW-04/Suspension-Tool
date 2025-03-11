@@ -1,12 +1,13 @@
 ﻿using Raylib_cs;
 using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Core_App
 {
     class Point : SceneEntity
     {
         //Attributes
-        private const float m_radius = 0.2f;
+        private const float m_radius = 0.1f;
         private bool m_hidden = false;
 
         //Constructor
@@ -30,24 +31,132 @@ namespace Core_App
 
     }
 
+    class Axis : SceneEntity
+    {
+        //Attributes
+        private Vector3 m_Direction;
+        private Color m_Colour;
+        private const float m_Length = 1f;
+
+        public Point StartPoint { get; }
+        public Point EndPoint { get; }
+
+        //Constructor
+        public Axis(Scene scene, Vector3 Direction, Color Colour) : base(scene)
+        {
+            m_Colour = Colour;
+            m_Direction = Direction;
+        }
+
+        //Methods
+        public override void Render(object sender, EventArgs e)
+        {
+            Vector3 endPos = m_Direction * m_Length;
+            //Raylib.DrawLine3D(Vector3.Zero, endPos, m_Colour);
+            Raylib.DrawCylinderEx(Vector3.Zero, endPos, 0.05f, 0f, 3, m_Colour);
+        }
+
+    }
+
     class Line : SceneEntity
     {
         //Attributes
-        private Vector3 m_start;
-        private Vector3 m_end;
+        private Vector3 m_start { get { return StartPoint.GetTransform().GetGlobalPosition(); } }
+        private Vector3 m_end { get { return EndPoint.GetTransform().GetGlobalPosition(); } }
         private float m_thickness = 0.02f;
 
-        //Constructor
-        public Line(Scene scene) : base(scene)
-        {
+        public Point StartPoint { get; }
+        public Point EndPoint { get; }
 
+        //Constructor
+        public Line(Scene scene, Point Start, Point End ) : base(scene)
+        {
+            StartPoint = Start;
+            EndPoint = End;
         }
 
         //Methods
         public override void Render(object sender, EventArgs e)
         {
             Raylib.DrawCylinderEx(m_start, m_end, m_thickness, m_thickness, 3, Color.Black);
-            //Raylib.DrawLine3D(m_start, m_end, Color.Red);
+        }
+
+    }
+
+
+    struct Knuckle
+    {
+
+    }
+
+    struct ControlArm
+    {
+        private Scene m_scene;
+
+        private Point m_Hardpoint;
+        private Point m_End;
+        private Line m_beam;
+
+        public ControlArm(Scene scene, Point Hardpoint, Point End)
+        {
+            m_scene = scene;
+
+            m_Hardpoint = Hardpoint;
+            m_End = End;
+            m_beam = new Line(scene, m_Hardpoint, m_End);
+        }
+    }
+
+    class Wheel : SceneEntity
+    {
+        //Attributes
+        private Point m_ContactPoint;
+        private Point m_CentrePoint;
+        private float m_Radius;
+        private float m_Width;
+
+        private float m_Camber;
+
+        //Constructor
+        public Wheel(Scene scene, Point ContactPoint, float Radius, float Width) : base(scene)
+        {
+            //Assign
+            m_ContactPoint = ContactPoint;
+            m_Radius = Radius;
+            m_Width = Width;
+            m_Camber = -0.15f;
+
+            //Find Center assuming 0deg camber
+            Vector3 a = new Vector3(0, MathF.Cos(m_Camber), MathF.Sin(m_Camber));
+            Vector3 b = new Vector3(0, -MathF.Sin(m_Camber), MathF.Cos(m_Camber));
+            Vector3 up = Vector3.UnitY.Y * a + Vector3.UnitY.Z * b;
+            up = Vector3.Normalize(up);
+            m_CentrePoint = new Point(scene, ContactPoint.GetTransform().GetLocalPosition() + up*m_Radius, true);
+        }
+
+        //Fields
+        public Point GetCentrePoint() { return m_CentrePoint; }
+
+        //Methods
+        public override void Render(object sender, EventArgs e)
+        {
+
+            //Calculations
+            Vector3 centre = m_CentrePoint.GetTransform().GetGlobalPosition();
+            Vector3 contact = m_ContactPoint.GetTransform().GetGlobalPosition();
+
+            Vector3 dir = Vector3.Normalize(centre-contact);
+     
+            Vector3 cross = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitX));
+            Vector3 end1 = centre + (cross*m_Width);
+            Vector3 end2 = centre - (cross*m_Width);
+
+            //Draw Body
+            Raylib.DrawCylinderEx(centre, end1, m_Radius, m_Radius, 16, Color.Gray);
+            Raylib.DrawCylinderEx(centre, end2, m_Radius, m_Radius, 16, Color.Gray);
+            //Draw Outline
+            Raylib.DrawCylinderWiresEx(centre, end1, m_Radius, m_Radius, 16, Color.DarkGray);
+            Raylib.DrawCylinderWiresEx(centre, end2, m_Radius, m_Radius, 16, Color.DarkGray);
         }
 
     }
