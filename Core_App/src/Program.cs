@@ -3,6 +3,7 @@ using Raylib_cs;
 using System.Data;
 using System.Numerics;
 using ImGuiNET;
+using Core_App.src;
 
 namespace Core_App
 {
@@ -10,6 +11,8 @@ namespace Core_App
     {
         static void Main(string[] args)
         {
+            
+
             //// Setting Up Raylib
             //Defining Graphic Window
             Raylib.InitWindow(1280, 720, "Display");
@@ -33,16 +36,36 @@ namespace Core_App
             Axis yAxis = new Axis(scene, Vector3.UnitY, Color.Green);
             Axis zAxis = new Axis(scene, Vector3.UnitZ, Color.Red);
 
-            //Front
-            Point contactPoint = new Point(scene, origin.GetTransform(), new Vector3(0,0,3), true);
-            Wheel w = new Wheel(scene, contactPoint, 0.5f, 0.2f);
-            Point h1 = new Point(scene, contactPoint.GetTransform(), new Vector3(0f, 0.6f, -1f), false);
-            ControlArm arm = new ControlArm(scene,h1,w.GetCentrePoint());
+            //Suspension
+            Suspension suspension = new Suspension(
+                500f,
+                new Vector3(850f, 625f, 0f),
+                new Vector3(665f, 244f, 0f),
+                new Vector3(380f, 710f, 0f),
+                new Vector3(260f, 240f, 0f),
+                260f);
+
+            //Points
+            Point contactPoint = new Point(scene, origin.GetTransform(), suspension.ContactPoint, true);
+            
+            Point upperHP = new Point(scene, contactPoint.GetTransform(), suspension.UpperHardPoint / 1000f, true);
+            Point lowerHP = new Point(scene, contactPoint.GetTransform(), suspension.LowerHardPoint / 1000f, true);
+            Point kpTop = new Point(scene, contactPoint.GetTransform(), suspension.KingpinTop / 1000f, true);
+            Point kpBottom = new Point(scene, contactPoint.GetTransform(), suspension.KingpinBottom / 1000f, true);
+
+            //Objects
+            Wheel w = new Wheel(scene, contactPoint, suspension.WheelCentre/1000f, suspension.WheelRadius/1000f, suspension.WheelWidth/1000f, suspension.Camber);
+
+            Line upperCA = new Line(scene, upperHP, kpTop);
+            Line lowerCA = new Line(scene, lowerHP, kpBottom);
+            Line kingpin = new Line(scene, kpTop, kpBottom);
+            Line stubAxel = new Line(scene, w.m_CentrePoint, new Point (scene, contactPoint.GetTransform(),suspension.StubStartPosition/1000f, true));
 
 
             //// Setting up IMGUI
-            GUI gui = new GUI(h1);
-            gui.Start().Wait();
+            InputGUI gui = new InputGUI(suspension);
+            Thread overlayGui = new Thread(gui.Start().Wait);
+            overlayGui.Start();
 
             //// Main Loop
             long prevTicks = DateTime.Now.Ticks;
@@ -54,11 +77,9 @@ namespace Core_App
 
                 scene.CallUpdate(new UpdateEventArgs() { DeltaTime = deltaTime }); // Calling Update
 
-
+                UpdateGeometry();
 
                 //Camera Control
-               
-                
                 if(Raylib.IsMouseButtonDown(MouseButton.Middle)) Raylib.UpdateCamera(ref camera, CameraMode.ThirdPerson);
                 else
                 {
@@ -97,6 +118,18 @@ namespace Core_App
                     Raylib.EndDrawing();
                 }
             }
+
+            void UpdateGeometry()
+            {
+                w.SetCamber(suspension.Camber);
+                w.SetCentre(suspension.WheelCentre / 1000f);
+
+                upperHP.GetTransform().SetLocalPosition(suspension.UpperHardPoint / 1000);
+                lowerHP.GetTransform().SetLocalPosition(suspension.LowerHardPoint / 1000);
+                kpTop.GetTransform().SetLocalPosition(suspension.KingpinTop / 1000);
+                kpBottom.GetTransform().SetLocalPosition(suspension.KingpinBottom / 1000) ;
+            }
+
         }
     }
 }

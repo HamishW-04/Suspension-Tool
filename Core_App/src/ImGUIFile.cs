@@ -1,23 +1,50 @@
 ﻿using ImGuiNET;
 using ClickableTransparentOverlay;
+using Core_App.src;
 
 namespace Core_App
 {
-    class GUI : Overlay
+    class InputGUI : Overlay
     {
         //Properties
-        private Point h1;
+        private Suspension s;
 
-        public GUI(Point H1)
+        public InputGUI(Suspension n_Suspension)
         {
-            h1 = H1;
+            s = n_Suspension;
         }
+
 
         protected override void Render()
         {
+            bool modified = false;
+
             ImGui.Begin("Input Window");
-            ImGui.SeparatorText("Front Suspension Inputs");
-            ImGui.InputFloat3("H1 Position", ref h1.GetTransform().m_Position);
+            ImGui.SeparatorText("Front Suspension Inputs (mm)");
+            if(ImGui.InputFloat3("Upper Hard Point Position", ref s.UpperHardPoint)) modified = true;
+            if(ImGui.InputFloat3("Lower Hard Point Position", ref s.LowerHardPoint)) modified = true;
+            if(ImGui.InputFloat3("Kingpin Top Position", ref s.KingpinTop)) modified = true;
+            if(ImGui.InputFloat3("Kingpin Bottom Position", ref s.KingpinBottom)) modified = true;
+            if(ImGui.InputFloat("Stub Axel Start Position (Length From Bottom)", ref s.StubStartLength)) modified = true;
+
+            ImGui.SeparatorText("Front Suspension Outputs");
+            ImGui.BeginTable("Output Table", 2);
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Wheel Centre:");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.WheelCentre.ToString());
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Camber:");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.Camber.ToString());
+
+            ImGui.EndTable();
+
+            if (modified) s.Calculate();
         }
     }
 }

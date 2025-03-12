@@ -84,17 +84,48 @@ namespace Core_App
     }
 
 
-    struct Knuckle
+    class Knuckle
     {
+        private Scene m_scene;
+        
+        public Point m_Top;
+        public Point m_Bottom;
+        private Point m_StubStart;
 
+        private float ratio = 0.5f;
+
+        private Line kpLine;
+
+        public Knuckle(Scene scene, Transform Parent,Point Top, Point Bottom)
+        {
+            m_scene = scene;
+            m_Top = Top;
+            m_Bottom = Bottom;
+
+            m_StubStart = new Point(scene,Parent, Vector3.Zero, false );
+
+            Calculate();
+
+            kpLine = new Line(scene, m_Top,m_Bottom);
+        }
+
+        public void Calculate()
+        {
+            //StubStart
+            Vector3 pos1 = m_Top.GetTransform().GetLocalPosition();
+            Vector3 pos2 = m_Bottom.GetTransform().GetLocalPosition();
+            Vector3 dir = Vector3.Normalize(pos1 - pos2);
+            Vector3 midpoint = pos2 + (dir * (Vector3.Distance(pos1, pos2) * ratio));
+            m_StubStart.GetTransform().SetLocalPosition(midpoint);
+        }
     }
 
-    struct ControlArm
+    class ControlArm
     {
         private Scene m_scene;
 
         private Point m_Hardpoint;
-        private Point m_End;
+        public Point m_End { get; }
         private Line m_beam;
 
         public ControlArm(Scene scene, Point Hardpoint, Point End)
@@ -111,31 +142,35 @@ namespace Core_App
     {
         //Attributes
         private Point m_ContactPoint;
-        private Point m_CentrePoint;
+        public Point m_CentrePoint { get; }
         private float m_Radius;
         private float m_Width;
 
         private float m_Camber;
 
         //Constructor
-        public Wheel(Scene scene, Point ContactPoint, float Radius, float Width) : base(scene)
+        public Wheel(Scene scene, Point ContactPoint, Vector3 CentrePosition, float Radius, float Width, float Camber) : base(scene)
         {
             //Assign
             m_ContactPoint = ContactPoint;
             m_Radius = Radius;
             m_Width = Width;
-            m_Camber = -0.15f;
+            m_Camber = 0;
 
             //Find Center assuming 0deg camber
             Vector3 a = new Vector3(0, MathF.Cos(m_Camber), MathF.Sin(m_Camber));
             Vector3 b = new Vector3(0, -MathF.Sin(m_Camber), MathF.Cos(m_Camber));
             Vector3 up = Vector3.UnitY.Y * a + Vector3.UnitY.Z * b;
             up = Vector3.Normalize(up);
-            m_CentrePoint = new Point(scene, ContactPoint.GetTransform().GetLocalPosition() + up*m_Radius, true);
+            m_CentrePoint = new Point(scene, m_ContactPoint.GetTransform(), CentrePosition, true);
         }
 
         //Fields
         public Point GetCentrePoint() { return m_CentrePoint; }
+
+        public void SetCamber(float Camber) { m_Camber = Camber; }
+
+        public void SetCentre(Vector3 Centre) { m_CentrePoint.GetTransform().SetLocalPosition(Centre); }
 
         //Methods
         public override void Render(object sender, EventArgs e)
@@ -147,7 +182,7 @@ namespace Core_App
 
             Vector3 dir = Vector3.Normalize(centre-contact);
      
-            Vector3 cross = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitX));
+            Vector3 cross = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitZ));
             Vector3 end1 = centre + (cross*m_Width);
             Vector3 end2 = centre - (cross*m_Width);
 

@@ -11,7 +11,7 @@ namespace Core_App
     {
         //Attributes
         private Transform? m_Parent;
-        public Vector3 m_Position;
+        private Vector3 m_Position;
 
         public Transform()
         {
