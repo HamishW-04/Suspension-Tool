@@ -21,9 +21,11 @@ namespace Core_App
 
             ImGui.Begin("Input Window");
             ImGui.SeparatorText("Front Suspension Inputs (mm)");
-            if(ImGui.InputFloat3("Upper Hard Point Position", ref s.UpperHardPoint)) modified = true;
-            if(ImGui.InputFloat3("Lower Hard Point Position", ref s.LowerHardPoint)) modified = true;
-            if(ImGui.InputFloat3("Kingpin Top Position", ref s.KingpinTop)) modified = true;
+            if(ImGui.InputFloat3("Upper Hard Point Position A", ref s.UpperHardPointA)) modified = true;
+            if(ImGui.InputFloat3("Upper Hard Point Position B", ref s.UpperHardPointB)) modified = true;
+            if (ImGui.InputFloat3("Lower Hard Point Position A", ref s.LowerHardPointA)) modified = true;
+            if (ImGui.InputFloat3("Lower Hard Point Position B", ref s.LowerHardPointB)) modified = true;
+            if (ImGui.InputFloat3("Kingpin Top Position", ref s.KingpinTop)) modified = true;
             if(ImGui.InputFloat3("Kingpin Bottom Position", ref s.KingpinBottom)) modified = true;
             if(ImGui.InputFloat("Stub Axel Start Position (Length From Bottom)", ref s.StubStartLength)) modified = true;
 
@@ -41,6 +43,18 @@ namespace Core_App
             ImGui.Text("Camber:");
             ImGui.TableNextColumn();
             ImGui.Text(s.Camber.ToString());
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Instance Point: ");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.InstancePoint.ToString());
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Roll Centre:");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.RollCentre.ToString());
 
             ImGui.EndTable();
 

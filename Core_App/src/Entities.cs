@@ -65,6 +65,9 @@ namespace Core_App
         private Vector3 m_end { get { return EndPoint.GetTransform().GetGlobalPosition(); } }
         private float m_thickness = 0.02f;
 
+        public bool IsSolid { set => m_solid = value; get => m_solid; }
+        private bool m_solid = true;
+
         public Point StartPoint { get; }
         public Point EndPoint { get; }
 
@@ -75,10 +78,12 @@ namespace Core_App
             EndPoint = End;
         }
 
+
         //Methods
         public override void Render(object sender, EventArgs e)
         {
-            Raylib.DrawCylinderEx(m_start, m_end, m_thickness, m_thickness, 3, Color.Black);
+            if (m_solid) Raylib.DrawCylinderEx(m_start, m_end, m_thickness, m_thickness, 3, Color.Black);
+            else Raylib.DrawLine3D(m_start, m_end, Color.Blue);
         }
 
     }

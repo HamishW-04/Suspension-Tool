@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SixLabors.ImageSharp.Processing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -15,50 +16,95 @@ namespace Core_App.src
         public float WheelWidth; //mm
         public float HalfTrack; //m
         //Positions
-        public Vector3 ContactPoint { get { return new Vector3(-HalfTrack,0,0); } } //m
-        public Vector3 UpperHardPoint; //mm
-        public Vector3 LowerHardPoint; //mm
+        public Vector3 ContactPoint { get { return new Vector3(-HalfTrack,0,0); } } //m global
+        public Vector3 UpperHardPointA, UpperHardPointB, UpperHrdPntAvg; //mm
+        public Vector3 LowerHardPointA, LowerHardPointB, LowerHrdPntAvg;//mm
         public Vector3 KingpinTop; //mm
         public Vector3 KingpinBottom; //mm
         public float StubStartLength; //mm
         public Vector3 StubStartPosition { get { return KingpinBottom + Vector3.Normalize(KingpinTop - KingpinBottom) * StubStartLength; } } //mm
 
-        //Calculated Inputs
+        //Calculated Fields
         public Vector3 WheelCentre; //mm Local
         public Vector3 GlobalWheelCentre { get { return WheelCentre + ContactPoint * 1000f; } } // mm Global
 
         ////  Output Fields
         public float Camber; //deg
+        public float KingPinInclination; //deg
+        public Vector3 InstancePoint;
+        public Vector3 RollCentre;
 
         //Constructor
-        public Suspension(float n_WheelRadius, Vector3 n_UpperHardPoint, Vector3 n_LowerHardPoint, Vector3 n_KingpinTop, Vector3 n_KingpinBottom, float n_StubStartLength)
+        public Suspension(CarProperties car, SuspensionProperties sus)
         {
-            WheelRadius = n_WheelRadius;
-            WheelWidth = 200f;
-            HalfTrack = 1f;
+            WheelRadius = car.WheelRadius;
+            WheelWidth = car.WheelWidth;
+            HalfTrack = car.Track/2f;
 
-            UpperHardPoint = n_UpperHardPoint;
-            LowerHardPoint = n_LowerHardPoint; 
-            KingpinTop = n_KingpinTop;
-            KingpinBottom = n_KingpinBottom;
-            StubStartLength = n_StubStartLength;
+            UpperHardPointA = sus.UpperContArmA;
+            UpperHardPointB = sus.UpperContArmB;
+            LowerHardPointA = sus.LowerContArmA;
+            LowerHardPointB = sus.LowerContArmB;
 
-            WheelCentre = CalculateWheelCentre();
-            Camber = CalculateCamber();
+            KingpinTop = sus.KingPinTop;
+            KingpinBottom = sus.KingPinBottom;
+            StubStartLength = sus.StubStartLength;
+
+            Calculate();
         }
 
         //Methods
         public void Calculate()
         {
+            CalculateCAMidPoints();
             WheelCentre = CalculateWheelCentre();
             Camber = CalculateCamber();
+            CalculateInstacneCentre();
+            CalculateRollCentre();
+        }
+
+        private void CalculateInstacneCentre()
+        {
+            Vector3 d1 = Vector3.Normalize(UpperHrdPntAvg - KingpinTop);
+            Vector3 p1 = UpperHrdPntAvg;
+            Vector3 d2 = Vector3.Normalize(LowerHrdPntAvg - KingpinBottom);
+            Vector3 p2 = LowerHrdPntAvg;
+            float s = 0f;
+
+            float det = d1.X * d2.Y - d1.Y * d2.X;
+            if (det == 0) return;
+
+            Vector3 diff = p2 - p1;
+
+            s = (diff.X * d2.Y - diff.Y * d2.X)/det;
+
+            InstancePoint = ((s * d1) + p1);
+
+        }
+
+        private void CalculateRollCentre()
+        {
+            Vector3 dir = Vector3.Normalize(1000f* ContactPoint - (InstancePoint - ContactPoint * 1000f));
+            float s = -InstancePoint.X/dir.X;
+
+            RollCentre = InstancePoint + s * dir;
+        }
+
+        private void CalculateCAMidPoints()
+        {
+            Vector3 upperDir = UpperHardPointA - UpperHardPointB;
+            Vector3 upperMidPnt = UpperHardPointB+ ((Mag(upperDir) / 2f) * Vector3.Normalize(upperDir));
+            UpperHrdPntAvg = new Vector3(upperMidPnt.X, upperMidPnt.Y, 0f);
+
+            Vector3 lowerDir = LowerHardPointA - LowerHardPointB;
+            Vector3 lowerMidPnt = LowerHardPointB + ((Mag(lowerDir) / 2f) * Vector3.Normalize(lowerDir));
+            LowerHrdPntAvg = new Vector3(lowerMidPnt.X, lowerMidPnt.Y, 0f);
         }
 
         private Vector3 CalculateWheelCentre()
         {
             Vector3 solution = Vector3.Zero;
 
-            //Vector3 stubStart = KingpinBottom + Vector3.Normalize(KingpinTop - KingpinBottom) * StubStartLength;
             float radius2 = Mag(StubStartPosition)/2f;
             Vector3 c2Centre = Vector3.Normalize(StubStartPosition) * radius2;
 
@@ -69,7 +115,6 @@ namespace Core_App.src
 
             Vector2 xSolutions = SolveQuadratic(quadA, quadB, quadC);
 
-            Console.WriteLine(xSolutions);
             if (MathF.Abs(xSolutions.X) < MathF.Abs(xSolutions.Y)) solution.X = xSolutions.X;
             else solution.X = xSolutions.Y;
 
