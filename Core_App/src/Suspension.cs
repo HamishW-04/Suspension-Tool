@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,17 +23,27 @@ namespace Core_App.src
         public Vector3 KingpinTop; //mm
         public Vector3 KingpinBottom; //mm
         public float StubStartLength; //mm
+        public Vector3 SpringHardPoint; //mm
+        public Vector3 SpringStartPos; //mm
+        public float SpringStartLength; //mm
         public Vector3 StubStartPosition { get { return KingpinBottom + Vector3.Normalize(KingpinTop - KingpinBottom) * StubStartLength; } } //mm
+
+        //Spring
+        public float SpringStiffness = 1000f;
+        public float SpringNaturalLength = 400f;
 
         //Calculated Fields
         public Vector3 WheelCentre; //mm Local
         public Vector3 GlobalWheelCentre { get { return WheelCentre + ContactPoint * 1000f; } } // mm Global
+        public Vector3 SpringEndPosition;
 
         ////  Output Fields
         public float Camber; //deg
         public float KingPinInclination; //deg
-        public Vector3 InstancePoint;
-        public Vector3 RollCentre;
+        public Vector3 InstancePoint; // mm local
+        public Vector3 RollCentre; // mm global
+        public float MotionRatio;
+        public float WheelRate;
 
         //Constructor
         public Suspension(CarProperties car, SuspensionProperties sus)
@@ -50,6 +61,9 @@ namespace Core_App.src
             KingpinBottom = sus.KingPinBottom;
             StubStartLength = sus.StubStartLength;
 
+            SpringHardPoint = sus.SpringHrdPnt;
+            SpringStartLength = sus.SpringStartLength;
+
             Calculate();
         }
 
@@ -61,6 +75,35 @@ namespace Core_App.src
             Camber = CalculateCamber();
             CalculateInstacneCentre();
             CalculateRollCentre();
+            SpringStartPos = CalculateSpringStartPos();
+            CalculateMotionRatio();
+            CalculateWheelRate();
+        }
+
+        private Vector3 CalculateSpringStartPos()
+        {
+            Vector3 dir = Vector3.Normalize( KingpinBottom - LowerHrdPntAvg);
+            return LowerHrdPntAvg + (dir * SpringStartLength);
+        }
+
+        private void CalculateMotionRatio()
+        {
+
+            float a = SpringStartLength;
+            float b = Mag(LowerHrdPntAvg - KingpinBottom);
+            float c = InstancePoint.X - KingpinBottom.X;
+            float d = (InstancePoint.X - ContactPoint.X) - ContactPoint.X;
+
+            float mrVertical = (a / b) * (c/d);
+
+            float t = MathF.Acos(Vector3.Dot(Vector3.Normalize(SpringHardPoint - SpringStartPos), Vector3.UnitX)); //inclination of spring
+            float cos = MathF.Sin(t);
+            MotionRatio = mrVertical * cos;
+        }
+
+        private void CalculateWheelRate()
+        {
+            WheelRate = MotionRatio * MotionRatio * SpringStiffness;
         }
 
         private void CalculateInstacneCentre()

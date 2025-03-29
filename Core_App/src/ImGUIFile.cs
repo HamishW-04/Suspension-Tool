@@ -28,6 +28,10 @@ namespace Core_App
             if (ImGui.InputFloat3("Kingpin Top Position", ref s.KingpinTop)) modified = true;
             if(ImGui.InputFloat3("Kingpin Bottom Position", ref s.KingpinBottom)) modified = true;
             if(ImGui.InputFloat("Stub Axel Start Position (Length From Bottom)", ref s.StubStartLength)) modified = true;
+            if (ImGui.InputFloat3("Spring Hard Point Position", ref s.SpringHardPoint)) modified = true;
+            if (ImGui.InputFloat("Spring Start Position (Length From Start of Arm)", ref s.SpringStartLength)) modified = true;
+            if (ImGui.InputFloat("Spring Stiffness", ref s.SpringStiffness)) modified = true;
+            if (ImGui.InputFloat("Spring Natural Length", ref s.SpringNaturalLength)) modified = true;
 
             ImGui.SeparatorText("Front Suspension Outputs");
             ImGui.BeginTable("Output Table", 2);
@@ -55,6 +59,18 @@ namespace Core_App
             ImGui.Text("Roll Centre:");
             ImGui.TableNextColumn();
             ImGui.Text(s.RollCentre.ToString());
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("MotionRatio:");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.MotionRatio.ToString());
+
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.Text("Wheel Rate:");
+            ImGui.TableNextColumn();
+            ImGui.Text(s.WheelRate.ToString());
 
             ImGui.EndTable();
 

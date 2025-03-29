@@ -48,14 +48,18 @@ namespace Core_App
         public Vector3 KingPinTop { get => m_KingPinTop; }
         public Vector3 KingPinBottom { get => m_KingPinBottom; }
         public float StubStartLength { get => m_StubStartLength; }
+        public Vector3 SpringHrdPnt { get => m_SpringHrdPnt; }
+        public float SpringStartLength { get => m_SpringStartLength;  }
 
         //Fields
         private Vector3 m_UpperContArmA, m_UpperContArmB; // mm local
         private Vector3 m_LowerContArmA, m_LowerContArmB; // mm local
         private Vector3 m_KingPinTop, m_KingPinBottom; // mm local
         private float m_StubStartLength; // mm local
+        private Vector3 m_SpringHrdPnt; // mm local
+        private float m_SpringStartLength; // mm local
 
-        public SuspensionProperties(Vector3 n_UpperContArmA, Vector3 n_UpperContArmB, Vector3 n_LowerContArmA, Vector3 n_LowerContArmB, Vector3 n_KingPinTop, Vector3 n_KingPinBottom, float n_StubStartLength )
+        public SuspensionProperties(Vector3 n_UpperContArmA, Vector3 n_UpperContArmB, Vector3 n_LowerContArmA, Vector3 n_LowerContArmB, Vector3 n_KingPinTop, Vector3 n_KingPinBottom, float n_StubStartLength, Vector3 n_SpringHrdPnt, float n_SpringStartLength )
         {
             m_UpperContArmA = n_UpperContArmA;
             m_UpperContArmB = n_UpperContArmB;
@@ -64,6 +68,8 @@ namespace Core_App
             m_KingPinTop = n_KingPinTop;
             m_KingPinBottom = n_KingPinBottom;
             m_StubStartLength = n_StubStartLength;
+            m_SpringHrdPnt = n_SpringHrdPnt;
+            m_SpringStartLength = n_SpringStartLength;
         }
     }
 }

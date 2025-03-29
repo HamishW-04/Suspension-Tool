@@ -45,7 +45,9 @@ namespace Core_App
                 new Vector3(665f, 244f, -260f),
                 new Vector3(380f, 710f, 0f),
                 new Vector3(260f, 240f, 0f),
-                260f
+                260f,
+                new Vector3(900f, 800f, 0f),
+                200f
                 );
 
             //Suspension
@@ -64,11 +66,14 @@ namespace Core_App
 
             Point stubStart = new Point(scene, contactPoint.GetTransform(), suspension.StubStartPosition/1000f, true);
 
-            Point upperContArmAvg = new Point(scene, contactPoint.GetTransform(), suspension.UpperHrdPntAvg/1000f, false);
-            Point lowerContArmAvg = new Point(scene, contactPoint.GetTransform(), suspension.LowerHrdPntAvg/1000f, false);
+            Point upperContArmAvg = new Point(scene, contactPoint.GetTransform(), suspension.UpperHrdPntAvg/1000f, true);
+            Point lowerContArmAvg = new Point(scene, contactPoint.GetTransform(), suspension.LowerHrdPntAvg/1000f, true);
 
             Point instancePoint = new Point(scene, contactPoint.GetTransform(), suspension.InstancePoint / 1000f, false);
             Point rollPoint = new Point(scene, origin.GetTransform(), suspension.RollCentre / 1000f, false);
+
+            Point springTop = new Point(scene, contactPoint.GetTransform(), suspension.SpringHardPoint / 1000f, true);
+            Point springBottom = new Point(scene, contactPoint.GetTransform(), suspension.SpringStartPos / 1000f, true);
 
             //Objects
             Wheel w = new Wheel(scene, contactPoint, suspension.WheelCentre/1000f, suspension.WheelRadius/1000f, suspension.WheelWidth/1000f, suspension.Camber);
@@ -88,6 +93,8 @@ namespace Core_App
 
             Line rollLine = new Line(scene, instancePoint, contactPoint);
             rollLine.IsSolid = false;
+
+            Spring spring = new Spring(scene, springBottom, springTop);
 
             //// Setting up IMGUI
             InputGUI gui = new InputGUI(suspension);
@@ -165,6 +172,9 @@ namespace Core_App
                 lowerContArmAvg.GetTransform().SetLocalPosition(suspension.LowerHrdPntAvg / 1000f);
 
                 instancePoint.GetTransform().SetLocalPosition(suspension.InstancePoint / 1000f);
+
+                springTop.GetTransform().SetLocalPosition(suspension.SpringHardPoint / 1000f);
+                springBottom.GetTransform().SetLocalPosition(suspension.SpringStartPos / 1000f);
             }
 
         }

@@ -1,6 +1,8 @@
 ﻿using Raylib_cs;
+using System.Net;
 using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
+using Vortice.Direct3D11;
 
 namespace Core_App
 {
@@ -201,4 +203,26 @@ namespace Core_App
 
     }
 
+    class Spring : SceneEntity
+    {
+        //Attributes
+        private Vector3 m_start { get { return m_StartPoint.GetTransform().GetGlobalPosition(); } }
+        private Vector3 m_end { get { return m_EndPoint.GetTransform().GetGlobalPosition(); } }
+        private float m_thickness = 0.05f;
+        private Point m_StartPoint;
+        private Point m_EndPoint;
+
+        //Constructor
+        public Spring(Scene scene, Point Start, Point End) : base(scene)
+        {
+            m_StartPoint = Start;
+            m_EndPoint = End;
+        }
+
+        //Methods
+        public override void Render(object sender, EventArgs e)
+        {
+            Raylib.DrawCylinderEx(m_start, m_end, m_thickness, m_thickness, 16, Color.Lime);
+        }
+    }
 }
