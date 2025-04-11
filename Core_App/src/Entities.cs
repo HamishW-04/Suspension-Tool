@@ -90,61 +90,6 @@ namespace Core_App
 
     }
 
-
-    class Knuckle
-    {
-        private Scene m_scene;
-        
-        public Point m_Top;
-        public Point m_Bottom;
-        private Point m_StubStart;
-
-        private float ratio = 0.5f;
-
-        private Line kpLine;
-
-        public Knuckle(Scene scene, Transform Parent,Point Top, Point Bottom)
-        {
-            m_scene = scene;
-            m_Top = Top;
-            m_Bottom = Bottom;
-
-            m_StubStart = new Point(scene,Parent, Vector3.Zero, false );
-
-            Calculate();
-
-            kpLine = new Line(scene, m_Top,m_Bottom);
-        }
-
-        public void Calculate()
-        {
-            //StubStart
-            Vector3 pos1 = m_Top.GetTransform().GetLocalPosition();
-            Vector3 pos2 = m_Bottom.GetTransform().GetLocalPosition();
-            Vector3 dir = Vector3.Normalize(pos1 - pos2);
-            Vector3 midpoint = pos2 + (dir * (Vector3.Distance(pos1, pos2) * ratio));
-            m_StubStart.GetTransform().SetLocalPosition(midpoint);
-        }
-    }
-
-    class ControlArm
-    {
-        private Scene m_scene;
-
-        private Point m_Hardpoint;
-        public Point m_End { get; }
-        private Line m_beam;
-
-        public ControlArm(Scene scene, Point Hardpoint, Point End)
-        {
-            m_scene = scene;
-
-            m_Hardpoint = Hardpoint;
-            m_End = End;
-            m_beam = new Line(scene, m_Hardpoint, m_End);
-        }
-    }
-
     class Wheel : SceneEntity
     {
         //Attributes
@@ -194,8 +139,8 @@ namespace Core_App
             Vector3 end2 = centre - (cross*m_Width);
 
             //Draw Body
-            Raylib.DrawCylinderEx(centre, end1, m_Radius, m_Radius, 16, Color.Gray);
-            Raylib.DrawCylinderEx(centre, end2, m_Radius, m_Radius, 16, Color.Gray);
+            //Raylib.DrawCylinderEx(centre, end1, m_Radius, m_Radius, 16, Color.Gray);
+            //Raylib.DrawCylinderEx(centre, end2, m_Radius, m_Radius, 16, Color.Gray);
             //Draw Outline
             Raylib.DrawCylinderWiresEx(centre, end1, m_Radius, m_Radius, 16, Color.DarkGray);
             Raylib.DrawCylinderWiresEx(centre, end2, m_Radius, m_Radius, 16, Color.DarkGray);

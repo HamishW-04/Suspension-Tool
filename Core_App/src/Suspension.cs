@@ -15,9 +15,9 @@ namespace Core_App.src
         //Wheel
         public float WheelRadius; //mm
         public float WheelWidth; //mm
-        public float HalfTrack; //m
+        public float Track; //m
         //Positions
-        public Vector3 ContactPoint { get { return new Vector3(-HalfTrack,0,0); } } //m global
+        public Vector3 ContactPoint { get { return new Vector3(-Track/2f,0,0); } } //m global
         public Vector3 UpperHardPointA, UpperHardPointB, UpperHrdPntAvg; //mm
         public Vector3 LowerHardPointA, LowerHardPointB, LowerHrdPntAvg;//mm
         public Vector3 KingpinTop; //mm
@@ -29,17 +29,19 @@ namespace Core_App.src
         public Vector3 StubStartPosition { get { return KingpinBottom + Vector3.Normalize(KingpinTop - KingpinBottom) * StubStartLength; } } //mm
 
         //Spring
-        public float SpringStiffness = 1000f;
-        public float SpringNaturalLength = 400f;
+        public float SpringStiffness = 20000f;
+        public float SpringNaturalLength = 600f;
 
         //Calculated Fields
         public Vector3 WheelCentre; //mm Local
         public Vector3 GlobalWheelCentre { get { return WheelCentre + ContactPoint * 1000f; } } // mm Global
         public Vector3 SpringEndPosition;
+        public Vector3 SteeringAxis2Floor; //mm local
 
         ////  Output Fields
         public float Camber; //deg
         public float KingPinInclination; //deg
+        public float ScrubRadius; // mm
         public Vector3 InstancePoint; // mm local
         public Vector3 RollCentre; // mm global
         public float MotionRatio;
@@ -50,7 +52,7 @@ namespace Core_App.src
         {
             WheelRadius = car.WheelRadius;
             WheelWidth = car.WheelWidth;
-            HalfTrack = car.Track/2f;
+            Track = car.Track;
 
             UpperHardPointA = sus.UpperContArmA;
             UpperHardPointB = sus.UpperContArmB;
@@ -73,6 +75,8 @@ namespace Core_App.src
             CalculateCAMidPoints();
             WheelCentre = CalculateWheelCentre();
             Camber = CalculateCamber();
+            KingPinInclination = CalculateKingpinInclination();
+            ScrubRadius = CalculateScrubRadius();
             CalculateInstacneCentre();
             CalculateRollCentre();
             SpringStartPos = CalculateSpringStartPos();
@@ -97,8 +101,8 @@ namespace Core_App.src
             float mrVertical = (a / b) * (c/d);
 
             float t = MathF.Acos(Vector3.Dot(Vector3.Normalize(SpringHardPoint - SpringStartPos), Vector3.UnitX)); //inclination of spring
-            float cos = MathF.Sin(t);
-            MotionRatio = mrVertical * cos;
+            float sin = MathF.Sin(t);
+            MotionRatio = mrVertical * sin;
         }
 
         private void CalculateWheelRate()
@@ -170,8 +174,28 @@ namespace Core_App.src
         {
             float dot = Vector3.Dot(WheelCentre, Vector3.UnitY);
             float angle = MathF.Acos(dot/(Mag(WheelCentre)));
-            angle *= 180 / MathF.PI;
+            angle *= 180f / MathF.PI;
             return angle;
+        }
+
+        private float CalculateKingpinInclination()
+        {
+            float inclination = 0;
+            Vector3 d = Vector3.Normalize(KingpinTop - KingpinBottom);
+            inclination = MathF.Acos(Vector3.Dot(d, Vector3.UnitY));
+            inclination *= 180f / MathF.PI;
+            return inclination;
+        }
+
+        private float CalculateScrubRadius()
+        {
+            Vector3 d = Vector3.Normalize(KingpinTop - KingpinBottom);
+            float a = -KingpinTop.Y / d.Y;
+
+            float x = a * d.X + KingpinTop.X;
+            SteeringAxis2Floor = new Vector3 (x, 0, 0);
+
+            return x;
         }
 
         private float Mag(Vector3 v)

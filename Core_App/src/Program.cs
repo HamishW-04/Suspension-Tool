@@ -37,17 +37,17 @@ namespace Core_App
             Axis zAxis = new Axis(scene, Vector3.UnitZ, Color.Red);
 
             //StartingProperties
-            CarProperties carProp = new CarProperties(1f,3f,0.5f, 500f, 260f);
+            CarProperties carProp = new CarProperties(1f,4f,0.5f, 500f, 260f);
             SuspensionProperties suspProp = new SuspensionProperties(
                 new Vector3(850f, 625f, 250f),
                 new Vector3(850f, 625f, -250f),
-                new Vector3(665f, 244f, 260f),
-                new Vector3(665f, 244f, -260f),
+                new Vector3(1005f, 244f, 260f),
+                new Vector3(1005f, 244f, -260f),
                 new Vector3(380f, 710f, 0f),
                 new Vector3(260f, 240f, 0f),
                 260f,
-                new Vector3(900f, 800f, 0f),
-                200f
+                new Vector3(650f, 800f, 0f),
+                400f
                 );
 
             //Suspension
@@ -75,6 +75,8 @@ namespace Core_App
             Point springTop = new Point(scene, contactPoint.GetTransform(), suspension.SpringHardPoint / 1000f, true);
             Point springBottom = new Point(scene, contactPoint.GetTransform(), suspension.SpringStartPos / 1000f, true);
 
+            Point scrubPoint = new Point(scene, contactPoint.GetTransform(), suspension.SteeringAxis2Floor / 1000f, false);
+
             //Objects
             Wheel w = new Wheel(scene, contactPoint, suspension.WheelCentre/1000f, suspension.WheelRadius/1000f, suspension.WheelWidth/1000f, suspension.Camber);
 
@@ -93,6 +95,9 @@ namespace Core_App
 
             Line rollLine = new Line(scene, instancePoint, contactPoint);
             rollLine.IsSolid = false;
+
+            Line steeringAxis = new Line(scene, kpBottom, scrubPoint);
+            steeringAxis.IsSolid = false;
 
             Spring spring = new Spring(scene, springBottom, springTop);
 
@@ -155,6 +160,8 @@ namespace Core_App
 
             void UpdateGeometry()
             {
+                contactPoint.GetTransform().SetLocalPosition(suspension.ContactPoint);
+
                 w.SetCamber(suspension.Camber);
                 w.SetCentre(suspension.WheelCentre / 1000f);
 
@@ -175,6 +182,8 @@ namespace Core_App
 
                 springTop.GetTransform().SetLocalPosition(suspension.SpringHardPoint / 1000f);
                 springBottom.GetTransform().SetLocalPosition(suspension.SpringStartPos / 1000f);
+
+                scrubPoint.GetTransform().SetLocalPosition(suspension.SteeringAxis2Floor /1000f);
             }
 
         }
